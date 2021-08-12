@@ -74,6 +74,7 @@ class Backend() {
   private[this] var sessionId: Int = 0
   private[this] var connectionTimeout: Int = 60
   private[this] var batchFile: String = ""
+  private[this] var preCommandHooks: List[Runnable] = List.empty
 
   private[this] var sc: SparkContext = null
 
@@ -128,20 +129,24 @@ class Backend() {
   def init(portParam: Int,
            sessionIdParam: Int,
            connectionTimeoutParam: Int): Unit = {
-      init(portParam, sessionIdParam, connectionTimeoutParam, "")
+      init(portParam, sessionIdParam, connectionTimeoutParam, "", List.empty)
   }
 
   def init(portParam: Int,
            sessionIdParam: Int,
            connectionTimeoutParam: Int,
-           batchFilePath: String): Unit = {
+           batchFilePath: String,
+           preCommandHooksParam: List[Runnable]): Unit = {
 
     port = portParam
     sessionId = sessionIdParam
     connectionTimeout = connectionTimeoutParam
     batchFile = batchFilePath
+    preCommandHooks = preCommandHooksParam
 
     logger = new Logger("Session", sessionId)
+
+    logger.log(s"preCommandHooks: ${preCommandHooks.size}")
 
     logger.log("is starting under " +
         InetAddress.getLoopbackAddress().getHostAddress +
@@ -371,7 +376,7 @@ class Backend() {
                 val backendChannel = new BackendChannel(logger, terminate, serializer, tracker)
                 backendChannel.setHostContext(hostContext)
 
-                val backendPort: Int = backendChannel.init(isRemote, port, !isWorker)
+                val backendPort: Int = backendChannel.init(isRemote, port, !isWorker, preCommandHooks)
 
                 logger.log("created the backend")
 
@@ -557,12 +562,5 @@ class Backend() {
         logger.log("failed to unregister from gateway: " + e.toString)
         false
     }
-  }
-}
-
-object Backend {
-  /* Leaving this entry for backward compatibility with databricks */
-  def main(args: Array[String]): Unit = {
-    Shell.main(args)
   }
 }

@@ -30,7 +30,7 @@ class BackendChannel(logger: Logger, terminate: () => Unit, serializer: Serializ
     hostContext = hostContextParam
   }
 
-  def init(remote: Boolean, port: Int, deterministicPort: Boolean): Int = {
+  def init(remote: Boolean, port: Int, deterministicPort: Boolean, preCommandHooks: List[Runnable]): Int = {
     if (remote) {
       val anyIpAddress = Array[Byte](0, 0, 0, 0)
       val anyInetAddress = InetAddress.getByAddress(anyIpAddress)
@@ -50,7 +50,7 @@ class BackendChannel(logger: Logger, terminate: () => Unit, serializer: Serializ
     val conf = new SparkConf()
     bossGroup = new NioEventLoopGroup(conf.getInt("sparklyr.backend.threads", 10))
     val workerGroup = bossGroup
-    val handler = new BackendHandler(() => this.close(), logger, hostContext, serializer, tracker)
+    val handler = new BackendHandler(() => this.close(), logger, hostContext, serializer, tracker, preCommandHooks)
 
     bootstrap = new ServerBootstrap()
       .group(bossGroup, workerGroup)

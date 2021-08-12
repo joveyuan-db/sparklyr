@@ -1,11 +1,9 @@
 package sparklyr
 
-import scala.util.Try
-
 object Shell {
   private[this] var backend: Backend = null
 
-  def main(args: Array[String]): Unit = {
+  def main(args: Array[String], preCommandHooks: List[Runnable] = List.empty): Unit = {
     val isService = args.contains("--service")
     val isRemote = args.contains("--remote")
     val isBatch = args.contains("--batch")
@@ -36,7 +34,7 @@ object Shell {
     backend = new Backend()
     backend.setType(isService, isRemote, false, isBatch)
     backend.setArgs(args)
-    backend.init(port, sessionId, connectionTimeout, batchFile)
+    backend.init(port, sessionId, connectionTimeout, batchFile, preCommandHooks)
   }
 
   def getBackend(): Backend = {
