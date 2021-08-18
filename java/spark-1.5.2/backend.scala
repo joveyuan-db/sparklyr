@@ -378,10 +378,7 @@ class Backend() {
                 val backendChannel = new BackendChannel(logger, terminate, serializer, tracker)
                 backendChannel.setHostContext(hostContext)
 
-                val numThreads: Int = sc.getConf.getInt("spark.r.numRBackendThreads", 10)
-                logger.log("spark.r.numRBackendThreads: " + sc.getConf.getInt("spark.r.numRBackendThreads", 10))
-                logger.log("sparklyr.backend.threads: " + sc.getConf.getInt("sparklyr.backend.threads", 10))
-                val backendPort: Int = backendChannel.init(isRemote, port, !isWorker, numThreads, preCommandHooks)
+                val backendPort: Int = backendChannel.init(isRemote, port, !isWorker, preCommandHooks)
 
                 logger.log("created the backend")
 

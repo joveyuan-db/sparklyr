@@ -13,6 +13,11 @@ import io.netty.channel.socket.nio.NioServerSocketChannel
 import io.netty.handler.codec.LengthFieldBasedFrameDecoder
 import io.netty.handler.codec.bytes.{ByteArrayDecoder, ByteArrayEncoder}
 
+import org.apache.spark.SparkConf
+import org.apache.spark.SparkContext
+
+import scala.util.Try
+
 class BackendChannel(logger: Logger, terminate: () => Unit, serializer: Serializer, tracker: JVMObjectTracker) {
 
   private[this] var channelFuture: ChannelFuture = null
@@ -25,7 +30,7 @@ class BackendChannel(logger: Logger, terminate: () => Unit, serializer: Serializ
     hostContext = hostContextParam
   }
 
-  def init(remote: Boolean, port: Int, deterministicPort: Boolean, numThreads: Int, preCommandHooks: List[Runnable]): Int = {
+  def init(remote: Boolean, port: Int, deterministicPort: Boolean, preCommandHooks: List[Runnable]): Int = {
     if (remote) {
       val anyIpAddress = Array[Byte](0, 0, 0, 0)
       val anyInetAddress = InetAddress.getByAddress(anyIpAddress)
@@ -42,7 +47,9 @@ class BackendChannel(logger: Logger, terminate: () => Unit, serializer: Serializ
       inetAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), channelPort)
     }
 
-    bossGroup = new NioEventLoopGroup(numThreads)
+    val conf = new SparkConf()
+    bossGroup = new NioEventLoopGroup(conf.getInt("spark.r.numRBackendThreads", 10))
+    logger.log("sparklyr.backend.threads: " + conf.getInt("spark.r.numRBackendThreads", 10))
     val workerGroup = bossGroup
     val handler = new BackendHandler(() => this.close(), logger, hostContext, serializer, tracker, preCommandHooks)
 
