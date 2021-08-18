@@ -13,7 +13,7 @@ import scala.util.Try
 
 /*
  * The Backend class is launched from Spark through spark-submit with the following
- * paramters: port, session and service.
+ * parameters: port, session and service.
  *
  *   port: Defined the port the gateway should listen to.
  *   sessionid: An identifier to track each session and reuse sessions if needed.
@@ -27,7 +27,7 @@ import scala.util.Try
  * If the port is already in use, the Backend will attempt to use the existing
  * service running in this port as a sparklyr gateway and register itself. Therefore,
  * the gateway socket serves not only as an interface to connect to the current
- * instance, but also as bridge to other sparklyr backend instances running in this
+ * instance, but also as a bridge to other sparklyr backend instances running in this
  * machine. This mechanism is the replacement of the ports file which used to
  * communicate ports information back to the sparklyr client, in this model, one
  * and only one gateway runs and provides the mapping between sessionids and ports.
@@ -46,10 +46,10 @@ import scala.util.Try
  * will look at the sessionid mapping table and return a redirect port if needed,
  * this enables the system to run multiple backends all using the same gateway
  * port but still support redirection to the correct sessionid backend. Finally,
- * if the sessionis is not found, a delay is introduced in case an existing
+ * if the sessionid is not found, a delay is introduced in case an existing
  * backend is launching an about to register.
  *
- * RegiterInstance provides a way to map sessionids to ports to other instances
+ * RegisterInstance provides a way to map sessionids to ports to other instances
  * of sparklyr running in this machines. During launch, if the gateway port is
  * already in use, the instance being launched will use this api to communicate
  * to the main gateway the port in which this instance will listen to.
@@ -122,6 +122,10 @@ class Backend() {
     isBatch = isBatchParam
   }
 
+  def setPreCommandHooks(preCommandHooksParam: List[Runnable]): Unit = {
+    preCommandHooks = preCommandHooksParam
+  }
+
   def setHostContext(hostContextParam: String) = {
     hostContext = hostContextParam
   }
@@ -135,14 +139,12 @@ class Backend() {
   def init(portParam: Int,
            sessionIdParam: Int,
            connectionTimeoutParam: Int,
-           batchFilePath: String,
-           preCommandHooksParam: List[Runnable]): Unit = {
+           batchFilePath: String): Unit = {
 
     port = portParam
     sessionId = sessionIdParam
     connectionTimeout = connectionTimeoutParam
     batchFile = batchFilePath
-    preCommandHooks = preCommandHooksParam
 
     logger = new Logger("Session", sessionId)
 

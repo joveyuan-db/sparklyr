@@ -3,7 +3,11 @@ package sparklyr
 object Shell {
   private[this] var backend: Backend = null
 
-  def main(args: Array[String], preCommandHooks: List[Runnable] = List.empty): Unit = {
+  def main(args: Array[String]): Unit = {
+    main(args, List.empty)
+  }
+
+  def main(args: Array[String], preCommandHooks: List[Runnable]): Unit = {
     val isService = args.contains("--service")
     val isRemote = args.contains("--remote")
     val isBatch = args.contains("--batch")
@@ -13,7 +17,7 @@ object Shell {
         "Usage: Backend port id [--service] [--remote] [--batch file.R]\n" +
         "  port:      port the gateway will listen to\n" +
         "  id:        arbitrary numeric identifier for this backend session\n" +
-        "  --service: prevents closing the connection from closing the backen\n" +
+        "  --service: prevents closing the connection from closing the backend\n" +
         "  --remote:  allows the gateway to accept remote connections\n" +
         "  --batch:   local path to R file to be executed in batch mode\n"
       )
@@ -34,7 +38,8 @@ object Shell {
     backend = new Backend()
     backend.setType(isService, isRemote, false, isBatch)
     backend.setArgs(args)
-    backend.init(port, sessionId, connectionTimeout, batchFile, preCommandHooks)
+    backend.setPreCommandHooks(preCommandHooks)
+    backend.init(port, sessionId, connectionTimeout, batchFile)
   }
 
   def getBackend(): Backend = {
