@@ -133,7 +133,7 @@ class Backend() {
   def init(portParam: Int,
            sessionIdParam: Int,
            connectionTimeoutParam: Int): Unit = {
-      init(portParam, sessionIdParam, connectionTimeoutParam, "", List.empty)
+      init(portParam, sessionIdParam, connectionTimeoutParam, "")
   }
 
   def init(portParam: Int,
