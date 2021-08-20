@@ -43,7 +43,7 @@ databricks_connection <- function(config, extensions) {
   # Hand in driver's libPaths to worker if user hasn't already set libpaths for notebook-scoped libraries
   config$spark.r.libpaths <- config$spark.r.libpaths %||% paste(.libPaths(), collapse = ",")
 
-  config$sparklyr.backend.threads <- 1
+  config$`sparklyr.shell.conf` <- c("spark.sparklyr-backend.threads=1", conf$`sparklyr.shell.conf`)
 
   new_databricks_connection(
     gateway_connection(
