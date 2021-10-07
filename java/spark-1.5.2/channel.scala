@@ -44,6 +44,7 @@ class BackendChannel(logger: Logger, terminate: () => Unit, serializer: Serializ
       inetAddress = new InetSocketAddress(InetAddress.getLoopbackAddress(), channelPort)
     }
 
+    logger.log("number of backend threads: " + BackendConf.getNumThreads)
     bossGroup = new NioEventLoopGroup(BackendConf.getNumThreads)
     val workerGroup = bossGroup
     val handler = new BackendHandler(() => this.close(), logger, hostContext, serializer, tracker, preCommandHooks)
