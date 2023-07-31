@@ -65,12 +65,10 @@ setMethod(
     sql <- as.character(DBI::sqlInterpolate(conn, statement, ...))
 
     if (spark_version(conn) < "3.4.0") {
-      if (hasArg("params")) stop("Native paramtereized queries require Spark 3.4.0 or newer")
+      if (hasArg("params")) stop("Native parameterized queries require Spark 3.4.0 or newer")
       sdf <- invoke(hive_context(conn), "sql", sql)
     } else {
-      sdf <- invoke(hive_context(conn), "sql", sql)
-      # TODO: DATABRICKS restore when figuring out how to do parameters
-      # sdf <- invoke(hive_context(conn), "sql", sql, as.environment(params))
+      sdf <- invoke(hive_context(conn), "sql", sql, params)
     }
 
     rs <- new("DBISparkResult",
